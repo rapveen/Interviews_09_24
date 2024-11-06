@@ -50,7 +50,8 @@
  * 
  */
 
-
+ import java.util.HashMap;
+ import java.util.Map;
 class LFUCache {
 
     public static class Node {
@@ -80,11 +81,6 @@ class LFUCache {
         void addFirst(Node node) {
             node.next = head.next;
             head.next.prev = node;
-   
-
-import java.util.HashMap;
-import java.util.Map;
-
         }
 
         void remove(Node node) {
