@@ -1,0 +1,219 @@
+Millions of customers visit our website every day, for each customer we have a unique identifier that is the same every time they visit. We have 2 kinds of customers. Recurrent Visitor that visit more than once and OneTime Visitors, who so far have visited the website only once.
+We want to implement a service that has 2 functionalities:
+OstCustomerVisit -> total no of visitors to our site, can include multiple visits by same user(cnt is multiple times)
+getFirstoneTimevisitor > first of the numerous one timme visitors|
+*/
+
+
+implemented using a counter variable and a hashset to keep track of unique visitors
+
+class VisitorTracker {
+    // For tracking all visits (including repeats)
+    private long totalVisits;
+    
+    // For tracking first time visitors only
+    private Set<Integer> firstTimeVisitors;
+    
+    // For maintaining order of first visits
+    private LinkedHashSet<Integer> oneTimeVisitors;
+    
+    public VisitorTracker() {
+        totalVisits = 0;
+        firstTimeVisitors = new HashSet<>();
+        oneTimeVisitors = new LinkedHashSet<>();
+    }
+    
+    /**
+     * Records a customer visit and updates metrics
+     * @param customerId unique identifier for the customer
+     */
+    public void customerVisit(int customerId) {
+        // Increment total visits counter
+        totalVisits++;
+        
+        // Check if this is customer's first ever visit
+        if (!firstTimeVisitors.contains(customerId)) {
+            firstTimeVisitors.add(customerId);
+            oneTimeVisitors.add(customerId);
+        } else {
+            // If customer visited before, remove from one-time visitors
+            oneTimeVisitors.remove(customerId);
+        }
+    }
+    
+    /**
+     * @return total number of visits including repeat visits
+     */
+    public long getTotalCustomerVisits() {
+        return totalVisits;
+    }
+    
+    /**
+     * @return first customer ID that has visited only once, or -1 if none exist
+     */
+    public int getFirstOneTimeVisitor() {
+        return oneTimeVisitors.isEmpty() ? -1 : oneTimeVisitors.iterator().next();
+    }
+    
+    public static void main(String[] args) {
+        // Test the implementation
+        VisitorTracker tracker = new VisitorTracker();
+        
+        // Test case 1: Single visit
+        tracker.customerVisit(1);
+        System.out.println("Total visits: " + tracker.getTotalCustomerVisits());  // Should be 1
+        System.out.println("First one-time visitor: " + tracker.getFirstOneTimeVisitor());  // Should be 1
+        
+        // Test case 2: Multiple visits by same customer
+        tracker.customerVisit(1);
+        System.out.println("Total visits: " + tracker.getTotalCustomerVisits());  // Should be 2
+        System.out.println("First one-time visitor: " + tracker.getFirstOneTimeVisitor());  // Should be -1
+        
+        // Test case 3: Multiple customers
+        tracker.customerVisit(2);
+        tracker.customerVisit(3);
+        tracker.customerVisit(2);
+        System.out.println("Total visits: " + tracker.getTotalCustomerVisits());  // Should be 5
+        System.out.println("First one-time visitor: " + tracker.getFirstOneTimeVisitor());  // Should be 3
+    }
+}
+
+
+FOLLOWUP: lets say if there is concept of time period/time window, like who are my getFirstOneTimeVisitor per hour bases
+
+Problem: Track one-time visitors per time window (e.g., hourly)
+Example: 
+- Customer 1 visits at 1:15 PM -> one-time visitor in 1 PM window
+- Customer 1 visits at 2:20 PM -> one-time visitor in 2 PM window (fresh start!)
+- Customer 2 visits at 1:45 PM -> one-time visitor in 1 PM window
+
+Main Structure: TreeMap<Long, WindowData>
+- Key: Window start time (e.g., 1:00 PM, 2:00 PM)
+- Value: WindowData object containing:
+  1. totalVisits counter
+  2. HashSet for first-time visitors
+  3. LinkedHashSet for one-time visitors
+
+Why TreeMap?
+- Efficiently organize time windows
+- Easy cleanup of old windows
+- Fast lookup for current window
+
+When a visit occurs at time T:
+1. Calculate window:
+   windowStart = (timestamp / windowSize) * windowSize
+
+2. Get/Create window data:
+   WindowData data = windows.get(windowStart) or new WindowData()
+
+3. Update window stats:
+   - Increment total visits
+   - If first visit in this window:
+     * Add to firstTimeVisitors
+     * Add to oneTimeVisitors
+   - If repeat visit in this window:
+     * Remove from oneTimeVisitors
+
+4. Cleanup old windows
+
+
+Time Complexity:
+- Recording visit: O(log w) 
+  where w = number of active windows
+- Getting one-time visitor: O(1)
+- Getting total visits: O(1)
+
+Space Complexity:
+- O(w * n) where:
+  w = number of windows
+  n = average visitors per window
+
+
+import java.util.*;
+
+class Solution {
+    private final long windowSizeMillis;
+    private final NavigableMap<Long, WindowData> windows;
+    
+    static class WindowData {
+        Set<Integer> allVisitors;
+        LinkedHashSet<Integer> oneTimeVisitors;
+        
+        WindowData() {
+            this.allVisitors = new HashSet<>();
+            this.oneTimeVisitors = new LinkedHashSet<>();
+        }
+    }
+    
+    public Solution() {
+        // Set window size to 60 seconds (60 * 1000 milliseconds)
+        this.windowSizeMillis = 60 * 1000;
+        this.windows = new TreeMap<>();
+    }
+    
+    public void customerVisit(int custId, long timestampMillis) {
+        // Calculate window start time
+        long windowStart = (timestampMillis / windowSizeMillis) * windowSizeMillis;
+        
+        // Get or create window
+        WindowData window = windows.computeIfAbsent(windowStart, k -> new WindowData());
+        
+        // Check if customer has visited in this window
+        if (!window.allVisitors.contains(custId)) {
+            // First visit in this window
+            window.allVisitors.add(custId);
+            window.oneTimeVisitors.add(custId);
+        } else {
+            // Repeat visit in this window
+            window.oneTimeVisitors.remove(custId);
+        }
+        
+        // Cleanup old windows
+        cleanupOldWindows(timestampMillis - windowSizeMillis);
+    }
+    
+    public int getFirstOneTimeVisitor(long timestampMillis) {
+        // Calculate window start time
+        long windowStart = (timestampMillis / windowSizeMillis) * windowSizeMillis;
+        
+        // Get window - don't create new one for query
+        WindowData window = windows.get(windowStart);
+        
+        // Check if window exists and has one-time visitors
+        if (window == null || window.oneTimeVisitors.isEmpty()) {
+            return -1;
+        }
+        
+        return window.oneTimeVisitors.iterator().next();
+    }
+    
+    private void cleanupOldWindows(long oldTimestampMillis) {
+        windows.headMap(oldTimestampMillis).clear();
+    }
+    
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        long curTime = System.currentTimeMillis();
+        
+        // Test sequence
+        System.out.println("=== Test Sequence ===");
+        
+        sol.customerVisit(5, curTime);
+        System.out.println("After 5 visits first time: " + 
+            sol.getFirstOneTimeVisitor(curTime));  // Should be 5
+        
+        sol.customerVisit(2, curTime);
+        System.out.println("After 2 visits: " + 
+            sol.getFirstOneTimeVisitor(curTime));  // Should be 5
+        
+        sol.customerVisit(5, curTime);
+        System.out.println("After 5 visits again: " + 
+            sol.getFirstOneTimeVisitor(curTime));  // Should be 2
+        
+        // Test different window
+        long nextWindowTime = curTime + (60 * 1000);  // Next window
+        System.out.println("\n=== Next Window ===");
+        System.out.println("First one-time visitor in next window: " + 
+            sol.getFirstOneTimeVisitor(nextWindowTime));  // Should be -1
+    }
+}
