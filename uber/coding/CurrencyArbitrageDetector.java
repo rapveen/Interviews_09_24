@@ -18,27 +18,9 @@ Negative Cycle Detection: Bellman-Ford detects cycles where the total sum of edg
 3. The Logarithmic Transformation Explained
 Mathematical Transformation:
 
-Negative Logarithm: For each exchange rate 
-𝑟
-r from currency 
-𝐴
-A to 
-𝐵
-B, assign the edge weight as 
-𝑤
-(
-𝐴
-→
-𝐵
-)
-=
-−
-log
-⁡
-(
-𝑟
-)
-w(A→B)=−log(r).
+Negative Logarithm: For each exchange rate r from currency A to B,
+assign the edge weight as 𝑤(𝐴→𝐵)=−log(𝑟)
+
 Rationale: This converts the product of exchange rates along a cycle into a sum of edge weights.
 Properties of Logarithms:
 
