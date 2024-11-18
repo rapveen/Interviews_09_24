@@ -1,0 +1,35 @@
+Technical Question: 
+Design elevator system for a building. This was a LLD question.
+
+I had to design a system for managing and retrieving the flight prices from different providers. The design was not too complex but then he started of with scenario based questions again and added a few more requirements/constraints in terms of rate limiting based on different provider limits and challenges faced in a distributed DC enviornment. He also gave me a few problems to solve that they had encountered in Agoda before.
+
+
+Questions on concurrency control and thread safety. Interviewer was keen to know my thought process on creating an api without using inbuild java functions. Used AtomicLong class in java and did some hands on with the code
+
+asked me to design my current project HLD.
+    -> asked questions related to sync/async in the project.
+    -> JAVA multithreading questions.
+
+designing a rate limiter.
+    -> for various APIS, including mobile, web, and APIS(Discussed Signature Databases
+
+Strong vs. Eventual Consistency in NoSQL
+
+The site is distributed throughout many locations (such as the EU region, North America, and Asia-Pacific), so how can consistency be maintained across all of them?
+
+What is a backend server? How many ports are there? How many connections can be maintained on a server at a time?
+
+What are different garbage collection algorithms in Java?
+
+Does Java garbage collector cleanup cyclic references?
+
+Difference between concurrency and parellelism?
+
+Design an architecture for delivering webhooks to customers.
+
+Behavioural Question:
+
+the motivation to move to bangkok
+future aspirations, what I am looking for in a company
+1) Why do you want to join Agoda?
+2) Reason for switch?

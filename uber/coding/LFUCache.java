@@ -10,7 +10,7 @@
  countMap (Frequency → DLList):
  
  Groups nodes by frequency
- Maintains LRU order within each frequency
+ Maintains LRU order within each frequency using DLList
  Enables O(1) eviction of least frequent item
  
  
@@ -80,17 +80,22 @@ class LFUCache {
 
         void addFirst(Node node) {
             node.next = head.next;
+            node.prev = head;
             head.next.prev = node;
+            head.next = node;
+            this.size++;
         }
 
         void remove(Node node) {
             node.prev.next = node.next;
             node.next.prev = node.prev;
+            node.prev = null;
+            node.next = null;
             this.size--;
         }
 
         Node removeLast() {
-            if (size > 0) {
+            if (this.size > 0) {
                 Node node = tail.prev;
                 remove(node);
                 return node;
@@ -99,7 +104,7 @@ class LFUCache {
         }
 
         boolean isEmpty() {
-            return size==0;
+            return this.size==0;
         }
     }
 
@@ -137,18 +142,18 @@ class LFUCache {
             updateFreq(node);
         } else {
             if(cache.size() >= this.capacity) {
-                DLList list = freqMap.get(this.minFreq);
-                Node lruNode = list.removeLast();
+                DLList minFreqList  = freqMap.get(this.minFreq);
+                Node lruNode = minFreqList.removeLast();
                 cache.remove(lruNode.key);
                  // Clean up empty frequency list
-                if (list.isEmpty()) {
+                if (minFreqList.isEmpty()) {
                     freqMap.remove(minFreq);
                 }
             }
             this.minFreq = 1;
-            Node newNode = new Node(key, value);
-            cache.put(key, newNode);
-            freqMap.computeIfAbsent(1, k -> new DLList()).addFirst(newNode);
+            node = new Node(key, value);
+            cache.put(key, node);
+            freqMap.computeIfAbsent(1, k -> new DLList()).addFirst(node);
         }
     }
 
@@ -157,22 +162,107 @@ class LFUCache {
         //remove node from the currlist
         currentNodeList.remove(node);
 
-         // Update minFrequency if necessary
+         // 3. Critical Section: Handle empty frequency list
         if (node.freq == minFreq && currentNodeList.isEmpty()) {
+            // Increment minFreq since this frequency no longer exists
             minFreq++;
+            // If we're removing from minimum frequency AND
+            // this was the last node at this frequency:
+            // a) Remove the empty list from freqMap
+            freqMap.remove(node.freq);
         }
 
         // update the freq of node to +1
         node.freq++;
 
-        // add to next freq list
+        // add to new freq list
         freqMap.computeIfAbsent(node.freq, k->new DLList()).addFirst(node);
     }
-}
 
-/**
- * Your LFUCache object will be instantiated and called as such:
- * LFUCache obj = new LFUCache(capacity);
- * int param_1 = obj.get(key);
- * obj.put(key,value);
- */
+    public static void main(String[] args) {
+        System.out.println("=== LFU Cache Demonstration ===\n");
+
+        // Test Case 1: Basic Operations from the dry run example
+        System.out.println("Test Case 1: Basic Operations (Capacity 3)");
+        LFUCache cache = new LFUCache(3);
+        
+        System.out.println("\nStep 1: put(1,1)");
+        cache.put(1, 1);
+        printCacheState(cache);
+        
+        System.out.println("\nStep 2: put(2,2)");
+        cache.put(2, 2);
+        printCacheState(cache);
+        
+        System.out.println("\nStep 3: put(3,3)");
+        cache.put(3, 3);
+        printCacheState(cache);
+        
+        System.out.println("\nStep 4: get(1)");
+        int value = cache.get(1);
+        System.out.println("Retrieved value: " + value);
+        printCacheState(cache);
+        
+        System.out.println("\nStep 5: put(4,4)");
+        cache.put(4, 4);  // Should evict 2 (least frequent)
+        printCacheState(cache);
+
+        // Test Case 2: Advanced Operations
+        System.out.println("\n=== Test Case 2: Advanced Operations ===");
+        cache = new LFUCache(3);
+        
+        System.out.println("\nAdding initial values: 1,2,3");
+        cache.put(1, 1);
+        cache.put(2, 2);
+        cache.put(3, 3);
+        printCacheState(cache);
+        
+        System.out.println("\nAccessing 1 twice");
+        cache.get(1);
+        cache.get(1);
+        printCacheState(cache);
+        
+        System.out.println("\nAccessing 2 once");
+        cache.get(2);
+        printCacheState(cache);
+        
+        System.out.println("\nAdding new value 4");
+        cache.put(4, 4);  // Should evict 3 (least frequent)
+        printCacheState(cache);
+        
+        // Test Case 3: Update Existing Value
+        System.out.println("\n=== Test Case 3: Updating Existing Value ===");
+        System.out.println("\nUpdating value of key 1 from 1 to 10");
+        cache.put(1, 10);
+        printCacheState(cache);
+    }
+    
+    private static void printCacheState(LFUCache cache) {
+        System.out.println("Cache state:");
+        // Note: This is for demonstration. In real implementation,
+        // we would need to add methods to expose internal state.
+        System.out.println("Items in cache: " + cache.cache.size());
+        System.out.println("Frequency groups: " + cache.freqMap.size());
+        System.out.println("Minimum frequency: " + cache.minFreq);
+        
+        System.out.println("\nDetailed frequency map:");
+        for (Map.Entry<Integer, LFUCache.DLList> entry : cache.freqMap.entrySet()) {
+            System.out.print("Frequency " + entry.getKey() + ": ");
+            printList(entry.getValue());
+        }
+        System.out.println();
+    }
+    
+    private static void printList(LFUCache.DLList list) {
+        LFUCache.Node current = list.head.next;
+        System.out.print("[");
+        while (current != list.tail) {
+            System.out.print("(" + current.key + "," + current.val + ")");
+            current = current.next;
+            if (current != list.tail) {
+                System.out.print(" -> ");
+            }
+        }
+        System.out.println("]");
+    }
+}

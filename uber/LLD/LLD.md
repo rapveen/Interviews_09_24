@@ -55,7 +55,9 @@ step 5: exception handling
         solution.
         The interviewer asked to optimize. I went on explaining a doubly linked list approach which was an overkill and couldn't code anything in time. I just had to replace the TreeMap with HashMap and introduce an additional variable topLikeFrequency to track the highest key in the new HashMap. And update topLikeFrequency whenever the Set in it becomes empty or a better likeFrequency comes.
 
-8. ``Keeping a 20-40 rule. First 20 min would be to scope down the vague problem to apis, objects, interfaces/abstract classes/super classes, strategies and specifications. Next 40 min for implementation and running test cases.``
+8. Producer, consumer using threads and synchronization problem no in-built libraries.
+
+``Keeping a 20-40 rule. First 20 min would be to scope down the vague problem to apis, objects, interfaces/abstract classes/super classes, strategies and specifications. Next 40 min for implementation and running test cases.``
 
 9. 
 
