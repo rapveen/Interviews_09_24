@@ -89,3 +89,70 @@ public class MahjongSolver {
 
 ### Followup
 Now how do you print the winning hand no just return true/false values
+
+
+
+he asked me what is the TC of the code to which I couldn't mention properly
+
+but here is the analysis,
+Let me break down the time complexity analysis of this Mahjong solver:
+
+1) Space Complexity First:
+- The count array is O(1) as it's always size 10 (fixed)
+- The recursion stack depth is at most O(4) since we need to form exactly 4 sets/streets
+- Therefore, Space Complexity is O(1)
+
+2) Time Complexity Analysis:
+
+Let's break it down step by step:
+
+```java
+// Initial counting of tiles: O(14) = O(1) as input size is fixed
+for (int tile : tiles) {
+    count[tile]++;
+}
+
+// Trying each possible pair:
+for (int i = 1; i <= 9; i++) {  // O(9) iterations
+    if (count[i] >= 2) {
+        // For each pair, we try to form 4 sets/streets
+        canFormSets(count, 4)
+    }
+}
+```
+
+The critical part is understanding the complexity of `canFormSets()`:
+
+For each recursive call to `canFormSets()`:
+1. We can try to form either:
+   - A set (triplet) with current tile
+   - A street (sequence) starting with current tile
+2. This creates a branching factor of 2 at each decision point
+3. We need to make 4 such decisions (as we need 4 sets/streets)
+4. At each level, we might need to scan up to 9 tiles to find the next non-zero count
+
+Therefore:
+- Branching factor = 2 (set or street)
+- Depth = 4 (need 4 sets/streets)
+- At each node: O(9) work to find next tile
+
+Total Time Complexity = O(9 * 2⁴) = O(144) = O(1)
+
+The final analysis:
+- Time Complexity: O(1)
+- Space Complexity: O(1)
+
+Why O(1)?
+1. The input size is fixed (always 14 tiles)
+2. The number of tiles types is fixed (1-9)
+3. The number of required sets/streets is fixed (4)
+4. The branching factor is constant (2)
+
+Important Notes:
+1. While the theoretical complexity is O(1) because all inputs are bounded constants, the actual running time can still be significant due to the exponential nature of the recursive search (2⁴ possible combinations).
+
+2. The algorithm uses backtracking which helps prune invalid combinations early, making it more efficient in practice than the worst-case analysis might suggest.
+
+3. The memoization/dynamic programming approach seen in some other solutions could potentially improve the practical performance by avoiding redundant computations, though it wouldn't change the theoretical complexity given the fixed input size.
+
+Would you like me to elaborate on any part of this analysis?
