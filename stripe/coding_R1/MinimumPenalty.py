@@ -60,6 +60,10 @@ Similary loss of 1 if we are open on ith day and there are no customer before i.
 Eg: S= "Y N N Y N Y Y N" and ind = 2
 Ans: 1 (1 day when no customer is there before ind 2) + 3 (3 days when customers are waiting after ind 2) = 4
 """
+
+
+# You can better reference this one repo: https://github.com/yingw787/stripe-interview/blob/main/stripe_interview/closing_time.py
+
 def calculate_total_loss(S, ind):
     # Remove spaces from the input string
     S = S.replace(' ', '')

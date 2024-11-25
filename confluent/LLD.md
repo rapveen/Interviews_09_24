@@ -1,0 +1,3 @@
+### Implement a scheduler in your language of choice. Theyll dive deep into concurrency. I choose java and they basically had me reinvent timer task using primitives like locks, wait, notify etc.
+    not distributed they wanted to check multi-threading concepts based on design they will ask questions how you avoid race-condition how you make sure each task run at their time and many more...
+
