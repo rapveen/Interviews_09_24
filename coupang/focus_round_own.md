@@ -30,4 +30,4 @@
     => I said about HVLC project
     => He asked why is SQL query slow in first place
         -> I couldn't say that it is the expected exec time. And also the queries are legacy based. ALso this came into picture only when we run these queries on High Data clients like Flipkart
-    => 
+    => How did you come to know that the issue is with SQL query time only.

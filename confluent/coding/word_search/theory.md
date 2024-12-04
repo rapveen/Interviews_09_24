@@ -117,7 +117,7 @@ For single word searches, lookup the word directly in the inverted index.
 
 Data Structures:
 Inverted Index:
-Map<String, Map<Integer, List<Integer>>> where:
+Map<String, Map<String, Set<Integer>> where:
     The String key is the term (word).
     The Map<Integer, List<Integer>> maps each document ID to a list of positions (word indices) where the word appears in the document.
 

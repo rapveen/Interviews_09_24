@@ -11,8 +11,7 @@ Repeated string manipulations are inefficient.
 Handling multiple replacements can lead to incorrect indexing if not managed properly.
 Optimized Solution
 Sort Replacements:
-java
-Copy code
+
 int k = indices.length;
 int[][] ops = new int[k][3];
 for (int i = 0; i < k; i++) ops[i] = new int[]{indices[i], i};
@@ -21,8 +20,8 @@ Arrays.sort(ops, (a, b) -> b[0] - a[0]);
 
 Benefit: Sorting in descending order prevents index shifting during replacements.
 StringBuilder for Efficient Modifications:
-java
-Copy code
+
+
 StringBuilder sb = new StringBuilder(s);
 for (int[] op : ops) {
     int idx = op[0];
@@ -36,8 +35,7 @@ return sb.toString();
 
 Benefit: StringBuilder allows efficient in-place modifications without creating multiple string copies.
 HashMap for Quick Lookup:
-java
-Copy code
+
 Map<Integer, Integer> map = new HashMap<>();
 for (int i = 0; i < k; i++) map.put(indices[i], i);
 StringBuilder sb = new StringBuilder();

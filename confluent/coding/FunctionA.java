@@ -39,6 +39,57 @@ Store the function names in a dictionary where the key is a sorted tuple of argu
 Search:
 Convert the search arguments into a sorted tuple and look up the dictionary to find matching function names.
  
+
+******************************************
+ALGORITHM
+******************************************
+
+The core algorithm consists of three main components: function registration, function searching, and cache management.
+Function Registration Process:
+When registering a new function, we first create an argument list signature by sorting the function's parameter types. This ensures that parameter order doesn't affect matching. We store this function in our main data structure using the argument signature as a key, allowing multiple functions with the same signature. We also maintain an index of functions grouped by their parameter count, which helps optimize the search process later.
+Search Process:
+When searching for matching functions, we follow these steps:
+
+First normalize the search query by sorting the parameter types, just like we did during registration
+Check if this exact search pattern exists in our cache
+If found in cache and not expired, return the cached result
+If not in cache, we:
+
+First look up functions with the same parameter count using our parameter count index
+Among those candidates, compare parameter types exactly
+For each matching function, record its usage statistics
+Compile a list of all matching function names
+
+
+
+Cache Management Process:
+Our cache system uses a sophisticated eviction strategy:
+
+Each cache entry stores:
+
+The search results
+When it was created
+How many times it's been accessed
+
+
+When the cache reaches capacity:
+
+Find the least frequently used entries
+Among equally least-used entries, pick the oldest one
+Remove that entry to make space
+
+
+Cache entries automatically expire after a configured time period
+When adding new functions, we only invalidate cache entries that match the new function's signature
+
+This algorithm balances several key concerns:
+
+Performance: Using parameter count as an initial filter dramatically reduces the search space
+Accuracy: Exact matching of parameter types ensures correct results
+Memory efficiency: Smart cache eviction prevents memory bloat
+Freshness: Cache expiration ensures results stay current
+Thread safety: All operations are designed to be thread-safe
+
 */
 
 import java.util.*;
@@ -127,8 +178,10 @@ public class FunctionA {
         argumentSizeIndex.computeIfAbsent(arguments.length, k -> new HashSet<>())
                         .add(argList);
        
-        // Clear cache when new functions are added
-        searchCache.clear();
+        // // Clear cache when new functions are added
+        // searchCache.clear();
+        // Only remove the affected cache entry
+        searchCache.remove(argList);
     }
     public List<String> searchFunctions(String[] arguments) {
         ArgumentList searchArgs = new ArgumentList(arguments);
@@ -140,10 +193,17 @@ public class FunctionA {
         List<String> result = searchFunctionsInternal(searchArgs);
        
         // Update cache if not too large
-        if (searchCache.size() < CACHE_SIZE) {
-            searchCache.put(searchArgs, result);
+        // if (searchCache.size() < CACHE_SIZE) {
+        //     searchCache.put(searchArgs, result);
+        // }
+        if (searchCache.size() >= CACHE_SIZE) {
+            // Could implement various eviction policies:
+            // 1. Remove least recently used entry
+            // 2. Remove random entry
+            // 3. Remove oldest entry
+            removeOldestEntry(); // or any other eviction strategy
         }
-       
+        searchCache.put(searchArgs, result);
         return result;
     }
     private List<String> searchFunctionsInternal(ArgumentList searchArgs) {
